@@ -1,0 +1,18 @@
+enum HotelStatus {
+  BOOKED
+  CANCELED
+  PENDING
+}
+
+model Hotel {
+  hotelId            String       @id @default(uuid())
+  reservation_id String       @unique
+  status        HotelStatus
+  total         Float
+  currency      String
+  guestName    String
+  guestEmail   String
+  checkIn      DateTime
+  checkout      DateTime
+  createdAt    DateTime     @default(now())
+}

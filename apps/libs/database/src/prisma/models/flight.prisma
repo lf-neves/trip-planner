@@ -1,0 +1,18 @@
+enum FlightStatus {
+  TICKETED
+  CANCELED
+  PENDING
+}
+
+model Flight {
+  flightId             String       @id @default(uuid())
+  pnr            String       @unique
+  status         FlightStatus
+  total          Float
+  currency       String
+  passengerName String
+  passengerEmail String
+  itineraryId    String
+
+  createdAt     DateTime     @default(now())
+}
