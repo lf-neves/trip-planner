@@ -15,8 +15,12 @@
     "lint:fix": "eslint src --fix"
   },
   "dependencies": {
-    "@langchain/core": "^0.3.42",
-    "@langchain/langgraph": "^0.2.55",
+    "@langchain/core": "^0.3.45",
+    "@langchain/langgraph": "^0.2.64",
+    "@langchain/langgraph-checkpoint": "^0.0.17",
+    "@langchain/langgraph-cli": "^0.0.30",
+    "@langchain/langgraph-sdk": "^0.0.73",
+    "@langchain/openai": "^0.5.5",
     "langchain": "^0.3.19",
     "dotenv": "^16.4.5",
     "uuid": "^10.0.0",
@@ -29,9 +33,6 @@
     "mongodb": "^6.14.2",
     "@pinecone-database/pinecone": "^5.1.1",
     "@langchain/cohere": "^0.3.2",
-    "@langchain/openai": "^0.4.4",
-    "@langchain/langgraph-checkpoint": "^0.0.16",
-    "@langchain/langgraph-sdk": "^0.0.57",
     "core": "workspace:^",
     "database": "workspace:^",
     "shared-libs": "workspace:^"

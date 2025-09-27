@@ -38,7 +38,7 @@ export default function FlightItinerariesList({
 
       try {
         const parsedContent: { flight: FlightItinerary } = JSON.parse(
-          toolResponse.content as string
+          toolResponse.content as string,
         );
         setSelectedFlight(parsedContent.flight);
       } catch {
@@ -65,7 +65,7 @@ export default function FlightItinerariesList({
           },
           goto: "generalInput",
         },
-      }
+      },
     );
 
     setFlightBooked(true);

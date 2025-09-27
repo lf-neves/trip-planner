@@ -4,6 +4,7 @@ module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{ts,tsx,js,jsx}",
+    "./src/agent-uis/**/*.{ts,tsx,js,jsx}",
     "../agents/src/**/*.{ts,tsx,js,jsx}",
   ],
   theme: {

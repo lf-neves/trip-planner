@@ -1,6 +1,5 @@
 {
   "node_version": "20",
-  "dependencies": ["."],
   "graphs": {
     "agent": "./apps/agents/src/supervisor/index.ts:graph",
     "chat": "./apps/agents/src/chat-agent/index.ts:agent"
@@ -8,5 +7,6 @@
   "ui": {
     "agent": "./apps/web/src/agent-uis/index.tsx"
   },
+  "dependencies": ["."],
   "env": ".env"
 }

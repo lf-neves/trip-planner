@@ -13,6 +13,10 @@ import { isAgentInboxInterruptSchema } from "@/lib/agent-inbox-interrupt";
 import { ThreadView } from "../agent-inbox";
 import { useQueryState, parseAsBoolean } from "nuqs";
 import { GenericInterruptView } from "./generic-interrupt";
+import AccommodationsList from "@/agent-uis/accommodations-list";
+import FlightItinerariesList from "@/agent-uis/flight-itineraries-list";
+import { FlightBookingConfirmation } from "@/agent-uis/flight-booking-confirmation";
+import { FlightCancellationConfirmation } from "@/agent-uis/flight-cancellation-confirmation";
 
 function CustomComponent({
   message,
@@ -26,17 +30,30 @@ function CustomComponent({
     (ui) => ui.metadata?.message_id === message.id,
   );
 
-  if (!customComponents?.length) return null;
+  if (!customComponents?.length) {
+    return null;
+  }
+
   return (
     <Fragment key={message.id}>
-      {customComponents.map((customComponent) => (
-        <LoadExternalComponent
-          key={customComponent.id}
-          stream={thread}
-          message={customComponent}
-          meta={{ ui: customComponent }}
-        />
-      ))}
+      {customComponents.map((customComponent) => {
+        return (
+          <LoadExternalComponent
+            key={customComponent.id}
+            stream={thread}
+            message={customComponent}
+            meta={{ ui: customComponent }}
+            // TODO: import this from the component map
+            components={{
+              "accommodations-list": AccommodationsList,
+              "flight-itineraries-list": FlightItinerariesList,
+              "flight-booking-confirmation": FlightBookingConfirmation,
+              "flight-cancellation-confirmation":
+                FlightCancellationConfirmation,
+            }}
+          />
+        );
+      })}
     </Fragment>
   );
 }
@@ -136,6 +153,7 @@ export function AssistantMessage({
             </>
           )}
 
+          {/* renders the generated component if it exists */}
           {message && <CustomComponent message={message} thread={thread} />}
           {isAgentInboxInterruptSchema(threadInterrupt?.value) &&
             (isLastMessage || hasNoAIOrToolMessages) && (
