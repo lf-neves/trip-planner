@@ -154,7 +154,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/lucasneves/Desktop/projects/practice/langgraphjs-gen-ui-examples/src/lib/database/src/generated/prisma",
+      "value": "/Users/lucasneves/Desktop/trip-planner/apps/libs/database/src/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -168,7 +168,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/lucasneves/Desktop/projects/practice/langgraphjs-gen-ui-examples/src/lib/database/src/prisma/schema.prisma",
+    "sourceFilePath": "/Users/lucasneves/Desktop/trip-planner/apps/libs/database/src/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -182,7 +182,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {

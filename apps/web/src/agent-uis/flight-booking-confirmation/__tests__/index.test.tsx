@@ -1,7 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { TripDetails } from "@/agent/trip-planner/types";
-import { Accommodation } from "@/agent/types";
 import { BookedAccommodation } from "../../accommodations-list/bookedAccommodation";
+import { Accommodation, TripDetails } from "../../../../../agents/src/types";
 
 // TODO: improve tests setup and coverage
 

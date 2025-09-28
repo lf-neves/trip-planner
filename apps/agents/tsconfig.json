@@ -11,7 +11,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
-    "lib": ["ES2021", "ES2022.Object", "DOM", "es2023"],
+    "lib": ["ESNext"],
     "declaration": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
@@ -20,6 +20,7 @@
     "useDefineForClassFields": true,
     "strictPropertyInitialization": false,
     "allowJs": true,
+    "types": ["jest", "node"]
   },
   "include": ["src/"],
   "exclude": ["node_modules/", "dist"]
