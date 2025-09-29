@@ -18,7 +18,7 @@ type BookingState = "idle" | "booking" | "success" | "error";
 
 export default function FlightItinerariesList({
   toolCallId,
-  flights,
+  flights = [],
   error,
 }: {
   toolCallId: string;
@@ -41,11 +41,17 @@ export default function FlightItinerariesList({
 
   // Set the selected flight if there's an immediate error and only one flight
   useEffect(() => {
-    if (error && flights.length === 1 && !selectedFlight) {
+    if (
+      error &&
+      Array.isArray(flights) &&
+      flights.length === 1 &&
+      !selectedFlight
+    ) {
       setSelectedFlight(flights[0]);
     }
   }, [error, flights, selectedFlight]);
 
+  // Handle booking state based on tool response
   useEffect(() => {
     if (typeof window === "undefined" || bookingState !== "booking") return;
 
@@ -108,6 +114,14 @@ export default function FlightItinerariesList({
     setBookingState("idle");
     setBookingError("");
     setSelectedFlight(undefined);
+  }
+
+  if (flights.length === 0) {
+    return (
+      <div className="text-gray-500 p-4">
+        No flights available for your search criteria.
+      </div>
+    );
   }
 
   // Show success state

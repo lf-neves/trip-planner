@@ -1,7 +1,6 @@
-import { FlightItinerary } from "@/agent-uis/types";
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { DetailGrid, DetailRow } from "@/components/ui/detailGrid";
-import { format } from "date-fns";
+import { Flight } from "database";
 import { CheckCircle } from "lucide-react";
 
 export function FlightBookingConfirmation({
@@ -9,7 +8,7 @@ export function FlightBookingConfirmation({
   passengerName,
   passengerEmail,
 }: {
-  flight: FlightItinerary;
+  flight: Flight;
   passengerName: string;
   passengerEmail: string;
 }) {
@@ -23,25 +22,10 @@ export function FlightBookingConfirmation({
         <DetailGrid>
           <DetailRow label="Passenger:" value={passengerName} />
           <DetailRow label="Email:" value={passengerEmail} />
-          <DetailRow label="Airline:" value={flight.airline} />
-          <DetailRow label="From:" value={flight.from} />
-          <DetailRow label="To:" value={flight.to} />
-          <DetailRow
-            label="Departure:"
-            value={format(new Date(flight.departureTime), "MMM d, yyyy HH:mm")}
-          />
-          <DetailRow
-            label="Arrival:"
-            value={format(new Date(flight.arrivalTime), "MMM d, yyyy HH:mm")}
-          />
-          <DetailRow label="Duration:" value={flight.duration} />
-          <DetailRow
-            label="Stops:"
-            value={flight.stops === 0 ? "Nonstop" : `${flight.stops} stop(s)`}
-          />
+          <DetailRow label="PNR:" value={flight.pnr} />
           <DetailRow
             label="Total Paid:"
-            value={`$${flight.price.toLocaleString()}`}
+            value={`$${(flight.total / 100).toFixed(2).toLocaleString()}`}
             bold
           />
         </DetailGrid>
