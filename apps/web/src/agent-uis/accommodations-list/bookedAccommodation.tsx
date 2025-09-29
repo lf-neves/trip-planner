@@ -1,7 +1,7 @@
 import { capitalizeSentence } from "core";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { StarSVG } from "./starSVG";
-import { format } from "date-fns";
+import { format } from "shared-libs";
 
 //TODO: Improve type sharing between apps
 import type { Accommodation, TripDetails } from "../../../../agents/src/types";

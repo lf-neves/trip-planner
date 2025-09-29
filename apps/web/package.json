@@ -33,7 +33,6 @@
     "clsx": "^2.1.1",
     "core": "workspace:^",
     "database": "workspace:^",
-    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.5.2",
     "esbuild": "^0.25.0",
     "esbuild-plugin-tailwindcss": "^2.0.1",

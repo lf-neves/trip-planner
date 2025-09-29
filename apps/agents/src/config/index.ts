@@ -4,7 +4,7 @@ import { logger } from "shared-libs";
 /**
  * Model provider configuration
  */
-export const ModelProviderSchema = z.enum(["openai", "anthropic"]);
+export const ModelProviderSchema = z.enum(["openai"]);
 export type ModelProvider = z.infer<typeof ModelProviderSchema>;
 
 /**

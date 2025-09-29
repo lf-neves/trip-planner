@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { format } from "date-fns";
+import { format } from "shared-libs";
 import { Plane } from "lucide-react";
 
 export function FlightCard({ flight }: { flight: FlightItinerary }) {

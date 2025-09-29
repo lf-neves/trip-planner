@@ -37,8 +37,5 @@
   "resolutions": {
     "@langchain/core": "^0.3.42"
   },
-  "packageManager": "pnpm@10.6.3",
-  "dependencies": {
-    "date-fns": "^4.1.0"
-  }
+  "packageManager": "pnpm@10.6.3"
 }

@@ -45,7 +45,6 @@ async function handleToolCall(
         toolCallId,
         flights: flightItinerariesData.itineraries, // Map itineraries to flights prop
       };
-      console.log("Flight props being passed to UI component:", flightProps);
 
       createUIComponent(
         config,

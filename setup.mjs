@@ -112,7 +112,7 @@ function setupEnvironment() {
         "Please update the .env file with your API keys before running the application"
       );
       print.warning(
-        "Required API keys: OPENAI_API_KEY, ANTHROPIC_API_KEY (optional), TAVILY_API_KEY (optional)"
+        "Required API keys: OPENAI_API_KEY, TAVILY_API_KEY (optional)"
       );
     } else {
       print.error(".env.example file not found");

@@ -1,7 +1,7 @@
 import { FlightItinerary } from "@/agent-uis/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DetailGrid, DetailRow } from "@/components/ui/detailGrid";
-import { format } from "date-fns";
+import { format } from "shared-libs";
 
 export function BookedFlight({ flight }: { flight: FlightItinerary }) {
   return (

@@ -1,5 +1,4 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { ChatAnthropic } from "@langchain/anthropic";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { Tool } from "@langchain/core/tools";
 import { getConfig, ModelProvider } from "../config";
@@ -67,16 +66,6 @@ export class LLMFactory {
           });
           break;
 
-        case "anthropic":
-          llm = this.createAnthropic({
-            model,
-            temperature,
-            maxTokens,
-            timeout,
-            streaming,
-          });
-          break;
-
         default:
           throw new AgentError(
             `Unsupported model provider: ${provider}`,
@@ -92,12 +81,12 @@ export class LLMFactory {
         if (toolChoice) {
           bindOptions.tool_choice = toolChoice;
         }
-        llm = llm.bindTools!(tools, bindOptions);
+        llm = llm.bindTools!(tools, bindOptions) as BaseChatModel;
       }
 
       // Add configuration tags for monitoring
       if (tags.length > 0) {
-        llm = llm.withConfig({ tags });
+        llm = llm.withConfig({ tags }) as BaseChatModel;
       }
 
       // Cache the base model (without tools) for reuse
@@ -144,27 +133,7 @@ export class LLMFactory {
     });
   }
 
-  /**
-   * Create Anthropic LLM instance
-   */
-  private static createAnthropic(options: {
-    model: string;
-    temperature: number;
-    maxTokens?: number;
-    timeout: number;
-    streaming: boolean;
-  }): ChatAnthropic {
-    const { model, temperature, maxTokens, timeout, streaming } = options;
 
-    return new ChatAnthropic({
-      model: model.includes("/") ? model.split("/")[1] : model, // Remove provider prefix
-      temperature,
-      maxTokens,
-      timeout,
-      streaming,
-      maxRetries: 0, // We handle retries at a higher level
-    });
-  }
 
   /**
    * Create LLM with automatic retry logic
@@ -250,12 +219,18 @@ export class LLMFactory {
   }
 
   /**
-   * Validate API keys for the configured providers
+   * Validate API keys for the configured provider
    */
-  static validateApiKeys(): { openai: boolean } {
-    return {
-      openai: !!process.env.OPENAI_API_KEY,
-    };
+  static validateApiKeys(): boolean {
+    const config = getConfig();
+    const provider = config.model.provider;
+    
+    switch (provider) {
+      case "openai":
+        return !!process.env.OPENAI_API_KEY;
+      default:
+        return false;
+    }
   }
 }
 

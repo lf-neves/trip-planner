@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { StarSVG } from "./starSVG";
 import { capitalizeSentence } from "core";
-import { format } from "date-fns";
+import { format } from "shared-libs";
 import { X } from "lucide-react";
 import { DetailGrid, DetailRow } from "@/components/ui/detailGrid";
 import type { Accommodation, TripDetails } from "../../../../agents/src/types";
