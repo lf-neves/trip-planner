@@ -12,38 +12,46 @@ AI-powered travel assistant that uses LangGraph's multi-agent architecture to ha
 
 🏗️ Tech Stack: LangGraph, Next.js, TypeScript, Prisma, OpenAI GPT-4o, Turborepo, Tailwind CSS
 
+## Project Structure
+
+This monorepo contains three main applications:
+
+**🤖 `apps/agents/`** - LangGraph multi-agent system  
+Backend service implementing the supervisor and trip-planner agents. Handles AI routing, tool calling, and conversation orchestration using LangGraph framework.
+
+**🌐 `apps/web/`** - Next.js frontend application  
+React-based web interface with generative UI components, real-time streaming, and interactive booking flows. Communicates with the agents service via LangGraph SDK.
+
+**📚 `apps/libs/`** - Shared libraries and utilities  
+Common packages including database schemas (Prisma), shared TypeScript types, utility functions, and testing infrastructure used across the monorepo.
+
 ---
 
-### API Keys Required
+### Quick Setup (Automated)
 
-Add these to your `.env` file (copy from `.env.example`):
+**🚀 Complete Setup Process**
+
+```bash
+# 1. Clone the repository
+git clone git@github.com:lf-neves/trip-planner.git
+cd trip-planner
+
+# 2. Set up environment variables
+cp .env.example .env
+# Edit .env with your actual values (see required variables below)
+
+# 3. Run the automated setup script
+npm run setup
+```
+
+### Required Environment Variables
+
+Edit your `.env` file with these required values:
 
 - **OPENAI_API_KEY** - Your OpenAI API key for GPT models
 - **DATABASE_URL** - Database connection string (required for Prisma migrations)
 - **NEXT_PUBLIC_API_URL** - LangGraph server URL (default: http://localhost:2024)
 - **NEXT_PUBLIC_ASSISTANT_ID** - Assistant identifier (default: agent)
-
-```bash
-# Copy the example environment file
-cp .env.example .env
-# Then edit .env with your actual values
-```
-
-### Quick Setup (Automated)
-
-**🚀 One-Command Setup** (After setting up .env file)
-
-```bash
-# Clone the repository
-git clone git@github.com:lf-neves/trip-planner.git
-cd trip-planner
-
-# Set up environment variables first (see above)
-cp .env.example .env
-
-# Run the automated setup script (cross-platform)
-npm run setup
-```
 
 ### Running the Application
 
