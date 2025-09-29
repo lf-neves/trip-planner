@@ -14,27 +14,36 @@ AI-powered travel assistant that uses LangGraph's multi-agent architecture to ha
 
 ---
 
+### API Keys Required
+
+Add these to your `.env` file (copy from `.env.example`):
+
+- **OPENAI_API_KEY** - Your OpenAI API key for GPT models
+- **DATABASE_URL** - Database connection string (required for Prisma migrations)
+- **NEXT_PUBLIC_API_URL** - LangGraph server URL (default: http://localhost:2024)
+- **NEXT_PUBLIC_ASSISTANT_ID** - Assistant identifier (default: agent)
+
+```bash
+# Copy the example environment file
+cp .env.example .env
+# Then edit .env with your actual values
+```
+
 ### Quick Setup (Automated)
 
-**🚀 One-Command Setup** (Recommended)
+**🚀 One-Command Setup** (After setting up .env file)
 
 ```bash
 # Clone the repository
 git clone git@github.com:lf-neves/trip-planner.git
 cd trip-planner
 
+# Set up environment variables first (see above)
+cp .env.example .env
+
 # Run the automated setup script (cross-platform)
 npm run setup
 ```
-
-### API Keys Required
-
-Add these to your `.env` file:
-
-- **OPENAI_API_KEY**
-- **DATABASE_URL**
-- **NEXT_PUBLIC_API_URL**
-- **NEXT_PUBLIC_ASSISTANT_ID**
 
 ### Running the Application
 
