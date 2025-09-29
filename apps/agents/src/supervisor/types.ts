@@ -14,24 +14,16 @@ export const SupervisorZodConfiguration = z.object({
   /**
    * The model ID to use for the reflection generation.
    * Should be in the format `provider/model_name`.
-   * Defaults to `anthropic/claude-3-7-sonnet-latest`.
+   * Defaults to `openai/gpt-4o`.
    */
   model: z
     .string()
     .optional()
     .langgraph.metadata({
       type: "select",
-      default: "anthropic/claude-3-7-sonnet-latest",
+      default: "openai/gpt-4o",
       description: "The model to use in all generations",
       options: [
-        {
-          label: "Claude 3.7 Sonnet",
-          value: "anthropic/claude-3-7-sonnet-latest",
-        },
-        {
-          label: "Claude 3.5 Sonnet",
-          value: "anthropic/claude-3-5-sonnet-latest",
-        },
         {
           label: "GPT 4o",
           value: "openai/gpt-4o",

@@ -1,173 +1,195 @@
 import { TripPlannerState, TripPlannerUpdate } from "../types";
-import { ChatOpenAI } from "@langchain/openai";
-import { typedUi } from "@langchain/langgraph-sdk/react-ui/server";
 import { LangGraphRunnableConfig } from "@langchain/langgraph";
-import { findToolCall } from "../../find-tool-call";
 import { getAccommodationsListProps } from "./tools/list-accommodations/list-accommodations-module";
 import { getFlightItinerariesListProps } from "./tools/list-flight-itineraries/list-flight-itineraries-module";
 import { bookFlight } from "./tools/book-flight/book-flight-module";
-import {
-  type bookFlightSchema,
-  cancelFlightSchema,
-  type listAccommodationsSchema,
-  type listFlightItinerariesSchema,
-  tripPlannerTools,
-} from "./tools";
+import { tripPlannerTools } from "./tools";
 import { cancelFlight } from "./tools/cancel-flight/cancel-flight-module";
+import { createToolLLM } from "../../utils/llm-factory";
+import { createUIComponent } from "../../utils/tool-executor";
+import { safeExecute, AgentError } from "../../utils/error-handling";
+import { getConfig } from "../../config";
+import { logger } from "shared-libs";
+import { TripDetails } from "../types";
+
+async function handleToolCall(
+  toolCall: any,
+  tripDetails: TripDetails,
+  config: LangGraphRunnableConfig,
+  response: any
+): Promise<void> {
+  const toolCallId = toolCall.id ?? "";
+
+  switch (toolCall.name) {
+    case "list-accommodations":
+      const accommodationProps = {
+        toolCallId,
+        ...getAccommodationsListProps(tripDetails),
+      };
+      createUIComponent(
+        config,
+        "accommodations-list",
+        accommodationProps,
+        response
+      );
+      logger.info("Accommodations list UI component created", {
+        destination: tripDetails.destination,
+      });
+      break;
+
+    case "list-flight-itineraries":
+      const flightItinerariesData = getFlightItinerariesListProps(tripDetails);
+      console.log("Flight itineraries data:", flightItinerariesData);
+
+      const flightProps = {
+        toolCallId,
+        flights: flightItinerariesData.itineraries, // Map itineraries to flights prop
+      };
+
+      createUIComponent(
+        config,
+        "flight-itineraries-list",
+        flightProps,
+        response
+      );
+      logger.info("Flight itineraries list UI component created", {
+        origin: tripDetails.origin,
+        destination: tripDetails.destination,
+        flightCount: flightItinerariesData.itineraries?.length || 0,
+      });
+      break;
+
+    case "book-flight":
+      const bookingParams = {
+        passengerName: toolCall.args.passengerName,
+        passengerEmail: toolCall.args.passengerEmail,
+        itineraryId: toolCall.args.itinerary.id,
+      };
+      const bookingResult = await bookFlight(bookingParams);
+      createUIComponent(
+        config,
+        "flight-booking-confirmation",
+        {
+          toolCallId,
+          passengerName: bookingParams.passengerName,
+          passengerEmail: bookingParams.passengerEmail,
+          flight: bookingResult,
+        },
+        response
+      );
+      logger.info("Flight booking completed", {
+        flightId: bookingResult.flightId,
+        pnr: bookingResult.pnr,
+      });
+      break;
+
+    case "cancel-flight":
+      const cancellationResult = await cancelFlight(toolCall.args);
+      createUIComponent(
+        config,
+        "flight-cancellation-confirmation",
+        {
+          toolCallId,
+          flight: cancellationResult,
+        },
+        response
+      );
+      logger.info("Flight cancellation completed", {
+        flightId: cancellationResult.flightId,
+      });
+      break;
+
+    default:
+      throw new Error(`Unknown tool: ${toolCall.name}`);
+  }
+}
 
 export async function callTools(
   state: TripPlannerState,
   config: LangGraphRunnableConfig
 ): Promise<TripPlannerUpdate> {
-  if (!state.tripDetails) {
-    throw new Error("No trip details found");
-  }
+  return safeExecute(
+    async () => {
+      if (!state.tripDetails) {
+        throw new AgentError(
+          "No trip details found",
+          "MISSING_TRIP_DETAILS",
+          false
+        );
+      }
 
-  const ui = typedUi(config);
-
-  const llm = new ChatOpenAI({ model: "gpt-4o", temperature: 0 }).bindTools(
-    tripPlannerTools
-  );
-
-  const response = await llm.invoke([
-    {
-      role: "system",
-      content: `
-      You are an AI travel assistant.
-      
-      When the user wants to book a flight, you MUST call the "book-flight" tool.
-      The tool requires:
-        - itinerary (the flight itinerary to book)
-        - passengerName
-        - passengerEmail
-      Do NOT respond with text only, call the tool. If you don't have all the required information, ask the user for the missing details.
-
-      When the user wants to cancel a flight, you MUST call the "cancel-flight" tool.
-      The tool requires flightId (the ID of the flight to cancel) or pnr (the booking reference).
-      Do NOT respond with text only, call the tool. If you don't have the flightId or pnr, ask the user for it.
-
-      When the user wants to see flight options, you MUST call the "list-flight-itineraries" tool.
-      Do NOT respond with text only, call the tool.
-
-      When the user wants to see accommodation options, you MUST call the "list-accommodations" tool.
-      Do NOT respond with text only, call the tool.
-
-      Always use the tools when relevant.
-    `,
-    },
-    ...state.messages,
-  ]);
-
-  const listAccommodationsToolCall = response.tool_calls?.find(
-    findToolCall("list-accommodations")<typeof listAccommodationsSchema>
-  );
-
-  const listFlightItinerariesToolCall = response.tool_calls?.find(
-    findToolCall("list-flight-itineraries")<typeof listFlightItinerariesSchema>
-  );
-
-  const bookFlightToolCall = response.tool_calls?.find(
-    findToolCall("book-flight")<typeof bookFlightSchema>
-  );
-
-  const cancelFlightToolCall = response.tool_calls?.find(
-    findToolCall("cancel-flight")<typeof cancelFlightSchema>
-  );
-
-  if (
-    !listAccommodationsToolCall &&
-    !listFlightItinerariesToolCall &&
-    !bookFlightToolCall &&
-    !cancelFlightToolCall
-  ) {
-    throw new Error("No tool calls found.");
-  }
-
-  if (listAccommodationsToolCall) {
-    ui.push(
-      {
-        name: "accommodations-list",
-        props: {
-          toolCallId: listAccommodationsToolCall.id ?? "",
-          ...getAccommodationsListProps(state.tripDetails),
-        },
-      },
-      { message: response }
-    );
-  }
-
-  if (listFlightItinerariesToolCall) {
-    ui.push(
-      {
-        name: "flight-itineraries-list",
-        props: {
-          toolCallId: listFlightItinerariesToolCall.id ?? "",
-          flights: getFlightItinerariesListProps(state.tripDetails).itineraries,
-        },
-      },
-      { message: response }
-    );
-  }
-
-  if (bookFlightToolCall) {
-    try {
-      const bookedFlight = await bookFlight({
-        itineraryId: bookFlightToolCall.args.itinerary.id,
-        passengerName: bookFlightToolCall.args.passengerName,
-        passengerEmail: bookFlightToolCall.args.passengerEmail,
+      logger.info("Processing tool calls for trip planning...", {
+        origin: state.tripDetails.origin,
+        destination: state.tripDetails.destination,
+        messageCount: state.messages.length,
       });
 
-      ui.push(
+      const agentConfig = getConfig();
+      const llm = createToolLLM(tripPlannerTools, {
+        timeout: agentConfig.model.timeout,
+        tags: ["tool-calling", "trip-planner"],
+      });
+
+      const response = await llm.invoke([
         {
-          name: "flight-booking-confirmation",
-          props: {
-            passengerEmail: bookedFlight.passengerEmail,
-            passengerName: bookedFlight.passengerName,
-            flight: bookFlightToolCall.args.itinerary,
-          },
-        },
-        { message: response }
-      );
-    } catch (error) {
-      // Handle booking failures and send error back to UI
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred during booking.";
+          role: "system",
+          content: `You are a trip planning agent that MUST use tools to complete user requests. You NEVER provide information or make claims without using the appropriate tools.
 
-      ui.push(
-        {
-          name: "flight-itineraries-list",
-          props: {
-            toolCallId: bookFlightToolCall.id ?? "",
-            flights: [bookFlightToolCall.args.itinerary],
-            error: errorMessage,
-          },
-        },
-        { message: response }
-      );
-    }
-  }
+CRITICAL RULES:
+1. You MUST call the appropriate tool for every user request
+2. NEVER say things like "I'll book", "I'll send confirmation", or "I'll search" - USE THE TOOLS INSTEAD
+3. NEVER provide flight info, accommodation info, or booking confirmations without calling tools
+4. If user asks for flights → CALL "list-flight-itineraries" tool
+5. If user wants to book → CALL "book-flight" tool (requires passengerName, passengerEmail, and itinerary)
+6. If user wants to cancel → CALL "cancel-flight" tool (requires flightId or pnr)
+7. If user asks for accommodations → CALL "list-accommodations" tool
 
-  if (cancelFlightToolCall) {
-    const canceledFlight = await cancelFlight({
-      flightId: cancelFlightToolCall.args.flightId,
-    });
+AVAILABLE TOOLS:
+- list-flight-itineraries: Shows available flights
+- book-flight: Books a specific flight (needs passenger details)
+- cancel-flight: Cancels a booked flight
+- list-accommodations: Shows available accommodations
 
-    ui.push(
-      {
-        name: "flight-cancellation-confirmation",
-        props: {
-          flight: canceledFlight,
+Your job is to determine which tool to call based on the user's request and call it immediately. Do not provide explanatory text - let the tool results speak for themselves.`,
         },
+        ...state.messages,
+      ]);
+
+      // Process tool calls generically
+      const toolCalls = response.tool_calls || [];
+
+      if (toolCalls.length === 0) {
+        throw new AgentError(
+          "No valid tool calls found in response",
+          "NO_TOOL_CALLS",
+          true
+        );
+      }
+
+      // Process each tool call
+      for (const toolCall of toolCalls) {
+        try {
+          await handleToolCall(toolCall, state.tripDetails, config, response);
+        } catch (error) {
+          logger.error(`Failed to handle tool call ${toolCall.name}:`, error);
+          createUIComponent(config, "error", {
+            error:
+              error instanceof Error ? error.message : "Tool execution failed",
+            retryable: true,
+            toolCallId: toolCall.id ?? "",
+          });
+        }
+      }
+
+      return { messages: [response] };
+    },
+    "call-trip-planner-tools",
+    {
+      retry: {
+        maxRetries: 1, // Limited retries for tool calls
+        retryCondition: (error) =>
+          error instanceof AgentError && error.retryable,
       },
-      { message: response }
-    );
-  }
-
-  return {
-    messages: [response],
-    ui: ui.items,
-    timestamp: Date.now(),
-  };
+    }
+  );
 }

@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DetailGrid, DetailRow } from "@/components/ui/detailGrid";
-import { format } from "date-fns";
+import { format } from "shared-libs";
 import { X } from "lucide-react";
 
 export function SelectedFlight({

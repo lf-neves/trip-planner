@@ -1,13 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
-import { ReactNode, useEffect, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useStreamContext } from "@/providers/Stream";
-import { useState, FormEvent } from "react";
+import { FormEvent } from "react";
 import { Button } from "../ui/button";
 import { Checkpoint, Message } from "@langchain/langgraph-sdk";
 import { AssistantMessage, AssistantMessageLoading } from "./messages/ai";
 import { HumanMessage } from "./messages/human";
+import { ChatErrorMessage } from "./messages/error";
 import {
   DO_NOT_RENDER_ID_PREFIX,
   ensureToolCallsHaveResponses,
@@ -114,6 +115,9 @@ export function Thread() {
   const isLoading = stream.isLoading;
 
   const lastError = useRef<string | undefined>(undefined);
+  const [chatErrors, setChatErrors] = useState<
+    Array<{ id: string; error: string; timestamp: Date }>
+  >([]);
 
   useEffect(() => {
     if (!stream.error) {
@@ -127,21 +131,59 @@ export function Thread() {
         return;
       }
 
-      // Message is defined, and it has not been logged yet. Save it, and send the error
+      // Message is defined, and it has not been logged yet. Save it, and add to chat errors
       lastError.current = message;
-      toast.error("An error occurred. Please try again.", {
-        description: (
-          <p>
-            <strong>Error:</strong> <code>{message}</code>
-          </p>
-        ),
+
+      const errorId = `error-${Date.now()}`;
+      setChatErrors((prev) => [
+        ...prev,
+        {
+          id: errorId,
+          error: message,
+          timestamp: new Date(),
+        },
+      ]);
+
+      // Still show toast for immediate feedback, but less prominent
+      toast.error("Something went wrong", {
+        description: "Check the chat for details and retry options",
+        duration: 3000,
         richColors: true,
-        closeButton: true,
       });
     } catch {
       // no-op
     }
   }, [stream.error]);
+
+  // Function to retry the last message
+  const handleErrorRetry = (errorId: string) => {
+    // Remove the error from chat
+    setChatErrors((prev) => prev.filter((e) => e.id !== errorId));
+
+    // Retry the last message by re-submitting
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.type === "human") {
+        // Re-submit the last human message
+        setFirstTokenReceived(false);
+        const toolMessages = ensureToolCallsHaveResponses(
+          messages.slice(0, -1),
+        );
+        stream.submit(
+          { messages: [...toolMessages, lastMessage] },
+          {
+            streamMode: ["values"],
+          },
+        );
+      } else {
+        // Try to regenerate by submitting with a modified state
+        setFirstTokenReceived(false);
+        stream.submit(undefined, {
+          streamMode: ["values"],
+        });
+      }
+    }
+  };
 
   // TODO: this should be part of the useStream hook
   const prevMessageLength = useRef(0);
@@ -366,6 +408,16 @@ export function Thread() {
                 {isLoading && !firstTokenReceived && (
                   <AssistantMessageLoading />
                 )}
+                {/* Render chat errors with retry buttons */}
+                {chatErrors.map((errorItem) => (
+                  <ChatErrorMessage
+                    key={errorItem.id}
+                    error={errorItem.error}
+                    timestamp={errorItem.timestamp}
+                    onRetry={() => handleErrorRetry(errorItem.id)}
+                    retryLabel="Retry"
+                  />
+                ))}
               </>
             }
             footer={
