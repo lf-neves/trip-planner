@@ -130,10 +130,10 @@ Or set `NODE_ENV=production` (simulation auto-disables in production).
 
 ### 📋 Detailed Documentation
 
-For comprehensive project information, see [PROJECT_DETAILS.md](./PROJECT_DETAILS.md):
+For comprehensive project information, see [project-details.md](./project-details.md):
 
-- **[Agent Architecture](./PROJECT_DETAILS.md#agent-architecture)** - In-depth technical overview of the multi-agent system, routing intelligence, and state management
-- **[Generative Components Table](./PROJECT_DETAILS.md#generative-components-table)** - Complete reference of all React UI components with props, integration patterns, and tool mappings
-- **[Next Steps & Roadmap](./PROJECT_DETAILS.md#next-steps--roadmap)** - Detailed development roadmap with testing improvements, production deployment, monitoring, and scalability enhancements
-- **[Trade-offs & Architectural Decisions](./PROJECT_DETAILS.md#trade-offs--decisions)** - In-depth analysis of framework choices, LLM strategies, UI decisions, and development trade-offs
-- **[AI Usage & Development Process](./PROJECT_DETAILS.md#ai-usage--development-process)** - Comprehensive overview of AI tools integration throughout the development lifecycle
+- **[Agent Architecture](./project-details.md#agent-architecture)** - In-depth technical overview of the multi-agent system, routing intelligence, and state management
+- **[Generative Components Table](./project-details.md#generative-components-table)** - Complete reference of all React UI components with props, integration patterns, and tool mappings
+- **[Next Steps & Roadmap](./project-details.md#next-steps--roadmap)** - Detailed development roadmap with testing improvements, production deployment, monitoring, and scalability enhancements
+- **[Trade-offs & Architectural Decisions](./project-details.md#trade-offs--decisions)** - In-depth analysis of framework choices, LLM strategies, UI decisions, and development trade-offs
+- **[AI Usage & Development Process](./project-details.md#ai-usage--development-process)** - Comprehensive overview of AI tools integration throughout the development lifecycle
