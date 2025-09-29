@@ -17,6 +17,15 @@
     },
     "dev": {
       "dependsOn": ["^dev"]
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "test:unit": {
+      "dependsOn": ["^test:unit"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^test:e2e"]
     }
   }
 }

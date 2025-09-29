@@ -50,9 +50,23 @@ This will start:
 
 ### Running the tests
 
-1. To run the unitary backend tests, enter the ./apps/agents folder and execute pnpm run test:unit
-2. To run the e2e tests, go to the project root and execute pnpm run test:e2e
-3. To run the frontend unit tests, go to the ./apps/web and execute pnpm run test:unit
+All tests can now be run from the root directory:
+
+```bash
+# Individual test suites
+pnpm test:unit:web     # Frontend unit tests only
+pnpm test:unit:agents  # Backend unit tests only
+pnpm test:e2e          # End-to-end tests only
+
+# Development mode
+pnpm test:watch        # Watch mode for all unit tests
+```
+
+**Test Coverage by Suite:**
+
+- **Frontend (`test:unit:web`)**: React components, hooks, utilities
+- **Backend (`test:unit:agents`)**: LangGraph agents, tools, business logic
+- **E2E (`test:e2e`)**: Full user workflows with Playwright
 
 ### Additional Tools
 
@@ -68,12 +82,58 @@ pnpm prisma:studio
 
 ### How to simulate latency & failures
 
+The trip planner includes built-in simulation features for testing error handling and loading states during flight booking:
+
+#### **Simulation Features**
+
+- **Latency Simulation**: Random delays between 300ms - 1200ms
+- **Error Simulation**: 15% random failure rate
+- **UI Testing**: Skeleton loading states and retry functionality
+
+#### **Configuration**
+
+**Environment Variables:**
+
+```bash
+# Enable/disable simulation (default: enabled in development)
+SIMULATION_ENABLED=true
+
+# Customize latency range (default: 300-1200ms)
+SIMULATION_LATENCY_MIN=300
+SIMULATION_LATENCY_MAX=1200
+
+# Customize error rate (default: 15%)
+SIMULATION_ERROR_RATE=15
+```
+
+#### **Testing User Experience**
+
+1. **Loading States**: Book a flight to see skeleton components during processing
+2. **Error Handling**: ~15% of booking attempts will fail with retry options
+3. **Retry Functionality**: Failed bookings can be retried with the "Try Again" button
+4. **Error Types**: Simulates various realistic booking failures:
+   - Airline system errors
+   - Network connection issues
+   - Request timeouts
+
+#### **Disable Simulation**
+
+To disable simulation for production or testing:
+
+```bash
+SIMULATION_ENABLED=false
+```
+
+Or set `NODE_ENV=production` (simulation auto-disables in production).
+
 ---
 
 ### 📋 Detailed Documentation
 
 For comprehensive project information, see [PROJECT_DETAILS.md](./PROJECT_DETAILS.md):
 
+- **[Agent Architecture](./PROJECT_DETAILS.md#agent-architecture)** - In-depth technical overview of the multi-agent system, routing intelligence, and state management
+- **[Generative Components Table](./PROJECT_DETAILS.md#generative-components-table)** - Complete reference of all React UI components with props, integration patterns, and tool mappings
 - **[Next Steps & Roadmap](./PROJECT_DETAILS.md#next-steps--roadmap)** - Detailed development roadmap with testing improvements, production deployment, monitoring, and scalability enhancements
 - **[Trade-offs & Architectural Decisions](./PROJECT_DETAILS.md#trade-offs--decisions)** - In-depth analysis of framework choices, LLM strategies, UI decisions, and development trade-offs
 - **[AI Usage & Development Process](./PROJECT_DETAILS.md#ai-usage--development-process)** - Comprehensive overview of AI tools integration throughout the development lifecycle

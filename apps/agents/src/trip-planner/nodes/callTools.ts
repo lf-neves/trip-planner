@@ -110,23 +110,43 @@ export async function callTools(
   }
 
   if (bookFlightToolCall) {
-    const bookedFlight = await bookFlight({
-      itineraryId: bookFlightToolCall.args.itinerary.id,
-      passengerName: bookFlightToolCall.args.passengerName,
-      passengerEmail: bookFlightToolCall.args.passengerEmail,
-    });
+    try {
+      const bookedFlight = await bookFlight({
+        itineraryId: bookFlightToolCall.args.itinerary.id,
+        passengerName: bookFlightToolCall.args.passengerName,
+        passengerEmail: bookFlightToolCall.args.passengerEmail,
+      });
 
-    ui.push(
-      {
-        name: "flight-booking-confirmation",
-        props: {
-          passengerEmail: bookedFlight.passengerEmail,
-          passengerName: bookedFlight.passengerName,
-          flight: bookFlightToolCall.args.itinerary,
+      ui.push(
+        {
+          name: "flight-booking-confirmation",
+          props: {
+            passengerEmail: bookedFlight.passengerEmail,
+            passengerName: bookedFlight.passengerName,
+            flight: bookFlightToolCall.args.itinerary,
+          },
         },
-      },
-      { message: response }
-    );
+        { message: response }
+      );
+    } catch (error) {
+      // Handle booking failures and send error back to UI
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred during booking.";
+
+      ui.push(
+        {
+          name: "flight-itineraries-list",
+          props: {
+            toolCallId: bookFlightToolCall.id ?? "",
+            flights: [bookFlightToolCall.args.itinerary],
+            error: errorMessage,
+          },
+        },
+        { message: response }
+      );
+    }
   }
 
   if (cancelFlightToolCall) {

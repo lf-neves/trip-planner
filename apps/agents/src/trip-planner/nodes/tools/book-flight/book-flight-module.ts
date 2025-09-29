@@ -1,5 +1,6 @@
 import { prismaClient } from "database";
 import { logger } from "shared-libs";
+import { simulateAndRandomlyFailBookingProcess } from "./latency-and-failure-simulation";
 
 type BookFlightParams = {
   passengerEmail: string;
@@ -14,6 +15,9 @@ export async function bookFlight({
 }: BookFlightParams) {
   const formattedPassengerEmail = passengerEmail.trim().toLowerCase();
   const formattedPassengerName = passengerName.trim();
+
+  // Simulate latency and potential failures for testing UI behavior
+  await simulateAndRandomlyFailBookingProcess();
 
   // TODO: ensure itinerary exists
   // TODO: ensure itinerary dates are in the future

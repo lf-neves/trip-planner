@@ -11,7 +11,11 @@
     "turbo:command": "turbo",
     "format": "turbo format",
     "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix"
+    "lint:fix": "turbo lint:fix",
+    "test:unit:web": "turbo test:unit --filter=web",
+    "test:unit:agents": "turbo test --filter=agents",
+    "test:e2e": "turbo test:e2e --filter=web",
+    "test:watch": "concurrently \"turbo test:unit --filter=web -- --watch\" \"turbo test --filter=agents -- --watch\""
   },
   "devDependencies": {
     "turbo": "latest",
