@@ -38,7 +38,7 @@ cd trip-planner
 
 # 2. Set up environment variables
 cp .env.example .env
-# Edit .env with your actual values (see required variables below)
+# Edit .env with your actual API keys (see required variables below)
 
 # 3. Run the automated setup script
 npm run setup

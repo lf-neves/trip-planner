@@ -7,7 +7,14 @@
  */
 
 import { execSync } from "child_process";
-import { existsSync, copyFileSync, appendFileSync, readFileSync } from "fs";
+import {
+  existsSync,
+  copyFileSync,
+  appendFileSync,
+  readFileSync,
+  symlinkSync,
+  unlinkSync,
+} from "fs";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -128,6 +135,48 @@ function setupEnvironment() {
   }
 }
 
+// Create symlinks for .env file in sub-packages
+function createEnvSymlinks() {
+  print.step("Creating environment file symlinks for sub-packages...");
+
+  const subPackages = ["apps/libs/database", "apps/agents", "apps/web"];
+
+  subPackages.forEach((packagePath) => {
+    const envLinkPath = join(packagePath, ".env");
+    const relativePath =
+      packagePath
+        .split("/")
+        .map(() => "..")
+        .join("/") + "/.env";
+
+    try {
+      // Remove existing symlink or file if it exists
+      if (existsSync(envLinkPath)) {
+        unlinkSync(envLinkPath);
+      }
+
+      // Create symlink to root .env file
+      symlinkSync(relativePath, envLinkPath);
+      print.success(`Created .env symlink for ${packagePath}`);
+    } catch (error) {
+      print.warning(
+        `Failed to create symlink for ${packagePath}: ${error.message}`
+      );
+      // Fallback: copy the file instead of symlinking
+      try {
+        copyFileSync(".env", envLinkPath);
+        print.success(`Copied .env file to ${packagePath} (fallback)`);
+      } catch (copyError) {
+        print.error(
+          `Failed to copy .env to ${packagePath}: ${copyError.message}`
+        );
+      }
+    }
+  });
+
+  print.success("Environment file symlinks setup completed");
+}
+
 // Install dependencies
 function installDependencies() {
   print.step("Installing dependencies with pnpm...");
@@ -235,6 +284,7 @@ async function main() {
 
     checkPrerequisites();
     setupEnvironment();
+    createEnvSymlinks();
     installDependencies();
     setupDatabase();
     // buildPackages();
