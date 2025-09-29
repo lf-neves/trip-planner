@@ -188,15 +188,44 @@ function installDependencies() {
 function setupDatabase() {
   print.step("Setting up database...");
 
-  const dbPath = join("apps", "libs", "database");
+  const dbPath = join(__dirname, "apps", "libs", "database");
 
   // Generate Prisma client
   print.step("Generating Prisma client...");
   runCommand("pnpm prisma:generate", { cwd: dbPath });
 
-  // Run database migrations
-  print.step("Running database migrations...");
-  runCommand("pnpm prisma:migrate", { cwd: dbPath });
+  // Check if we need to reset the database due to drift
+  print.step("Checking database migration status...");
+  try {
+    // Try to apply migrations first
+    runCommand("pnpm prisma:migrate", { cwd: dbPath });
+    print.success("Database migrations applied successfully");
+  } catch (error) {
+    print.warning("Migration failed, attempting database reset...");
+
+    try {
+      // Reset database to sync with migration history
+      print.step("Resetting database to sync with migration history...");
+      runCommand("npx prisma migrate reset --force", { cwd: dbPath });
+      print.success("Database reset completed successfully");
+    } catch (resetError) {
+      print.warning("Database reset failed, trying db push instead...");
+
+      try {
+        // Fallback: push schema directly
+        runCommand("npx prisma db push --force-reset", { cwd: dbPath });
+        print.success("Database schema pushed successfully");
+      } catch (pushError) {
+        print.error(
+          "Failed to set up database. Please check your DATABASE_URL and try again manually:"
+        );
+        print.error(
+          "cd apps/libs/database && npx prisma migrate reset --force"
+        );
+        throw new Error("Database setup failed");
+      }
+    }
+  }
 
   print.success("Database setup completed");
 }
@@ -235,16 +264,27 @@ function verifySetup() {
     return false;
   }
 
+  // Check if .env symlinks exist
+  const subPackages = ["apps/libs/database", "apps/agents", "apps/web"];
+  subPackages.forEach((packagePath) => {
+    const envPath = join(packagePath, ".env");
+    if (!existsSync(envPath)) {
+      print.warning(`Missing .env file in ${packagePath}`);
+    }
+  });
+
   // Try to verify database connection
   try {
-    const dbPath = join("apps", "libs", "database");
-    runCommand("pnpm prisma db push --force-reset", {
+    const dbPath = join(__dirname, "apps", "libs", "database");
+    runCommand("npx prisma db pull --print", {
       cwd: dbPath,
       silent: true,
     });
     print.success("Database connection verified");
   } catch {
-    print.warning("Database connection could not be verified");
+    print.warning(
+      "Database connection could not be verified - please check your DATABASE_URL"
+    );
   }
 
   print.success("Setup verification completed");
@@ -258,18 +298,22 @@ function printNextSteps() {
   console.log("==================");
   console.log("");
   console.log("Next steps:");
-  console.log("1. Update your .env file with the required API keys:");
+  console.log("1. Verify your .env file has the correct configuration:");
   console.log("   - OPENAI_API_KEY (required for GPT-4o)");
-  console.log("   - DATABASE_URL");
+  console.log("   - DATABASE_URL (PostgreSQL connection string)");
+  console.log("   - DIRECT_URL (Direct PostgreSQL connection, no pooling)");
   console.log("");
-  console.log("2. Start the development server:");
+  console.log("2. If you need to reset the database manually:");
+  console.log("   cd apps/libs/database && npx prisma migrate reset --force");
+  console.log("");
+  console.log("3. Start the development server:");
   console.log("   pnpm dev");
   console.log("");
-  console.log("3. Open your browser and navigate to:");
+  console.log("4. Open your browser and navigate to:");
   console.log("   - Web app: http://localhost:3000");
   console.log("   - LangGraph Studio: http://localhost:2024");
   console.log("");
-  console.log("4. Optional: Open Prisma Studio to view your database:");
+  console.log("5. Optional: Open Prisma Studio to view your database:");
   console.log("   cd apps/libs/database && pnpm prisma:studio");
   console.log("");
   print.success("Happy coding! 🚀");
@@ -287,7 +331,6 @@ async function main() {
     createEnvSymlinks();
     installDependencies();
     setupDatabase();
-    // buildPackages();
     seedDatabase();
     verifySetup();
 
